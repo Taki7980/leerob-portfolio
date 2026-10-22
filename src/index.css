@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @layer base {
+  * {
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+  }
   :root {
     --bg-page: #fafafa;
     --text-primary: #171717;
