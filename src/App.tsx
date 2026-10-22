@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { 
-  Moon, 
-  Sun, 
-  Code2, 
+  ArrowUpRight, 
   Terminal, 
-  Server, 
-  Layers, 
-  BookOpen, 
+  Sun, 
+  Moon, 
   Copy, 
   Check, 
-  ArrowUpRight 
+  Code2, 
+  Server, 
+  Layers, 
+  Search, 
+  Command,
+  AlertCircle
 } from 'lucide-react';
+import { PROJECTS, ESSAYS, EXPERIENCES } from './data/portfolioData';
+import { TerminalModal } from './components/TerminalModal';
 
 function GithubIcon(props: { className?: string }) {
   return (
@@ -40,148 +44,118 @@ function TwitterIcon(props: { className?: string }) {
   );
 }
 
-interface Project {
-  title: string;
-  tagline: string;
-  description: string;
-  tags: string[];
-  githubUrl: string;
-  featured?: boolean;
-}
-
-interface Experience {
-  role: string;
-  company: string;
-  period: string;
-  highlights: string[];
-}
-
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem('theme') === 'dark' || 
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    } catch {
+      return false;
+    }
+  });
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [selectedEssay, setSelectedEssay] = useState<number | null>(null);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('All');
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   useEffect(() => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(prefersDark);
-  }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    } catch {
+      // Safe fallback if localStorage is blocked
     }
   }, [darkMode]);
 
-  const copyEmail = () => {
-    navigator.clipboard.writeText('nirjharsarkar8@gmail.com');
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+  // Passive & Throttled Scroll Listener for Reading Progress
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalScroll = document.documentElement.scrollTop;
+          const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          if (windowHeight > 0) {
+            setReadingProgress((totalScroll / windowHeight) * 100);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keyboard shortcut cmd+k / ctrl+k for terminal
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (!isInputFocused || isTerminalOpen) {
+          e.preventDefault();
+          setIsTerminalOpen(prev => !prev);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isTerminalOpen]);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText('nirjharsarkar8@gmail.com');
+      setCopyStatus('success');
+    } catch {
+      setCopyStatus('error');
+    } finally {
+      setTimeout(() => setCopyStatus('idle'), 2500);
+    }
   };
 
-  const projects: Project[] = [
-    {
-      title: 'AI Workflow V3',
-      tagline: 'Go-first, agent-agnostic control plane for software development',
-      description: 'Clean re-implementation of AI agent orchestration. Escalates capability, not context volume. Features native MCP server, SCIP/code-review-graph AST indexing, deterministic journal replay, and differential testing harness.',
-      tags: ['Go', 'MCP', 'AST Analysis', 'Multi-Agent', 'CLI'],
-      githubUrl: 'https://github.com/Taki7980/Ai-workflow-V3',
-      featured: true
-    },
-    {
-      title: 'RevenueOS Backend',
-      tagline: 'Production-grade AI B2B quotation & revenue automation engine',
-      description: 'Modular monolith backend for an AI quotation agent. Converts inquiries into deterministic quotations, automated approval workflows, WhatsApp delivery, CRM records, and PostgreSQL state persistence.',
-      tags: ['Go', 'PostgreSQL', 'REST', 'Docker', 'Multi-tenant'],
-      githubUrl: 'https://github.com/Taki7980/RevenueOS-backend',
-      featured: true
-    },
-    {
-      title: 'Distributed File Storage',
-      tagline: 'P2P network transport layer & content-addressed storage',
-      description: 'Peer-to-peer decentralized storage architecture implemented from scratch in Go. Features custom TCP transport decoding, peer handshakes, CAS hash routing, and streaming data encryption.',
-      tags: ['Go', 'P2P Networking', 'TCP', 'CAS', 'Distributed Systems'],
-      githubUrl: 'https://github.com/Taki7980/distributed-file-storage',
-      featured: true
-    },
-    {
-      title: 'Context Bridge',
-      tagline: 'Local-first Chrome extension for moving reviewable AI context',
-      description: 'Chrome Manifest V3 extension for privacy-first developer context transfer. Deterministically packs user-selected text, runs security audits against secret exposure, and exports to clipboard or MCP bridge.',
-      tags: ['TypeScript', 'Chrome Extension', 'Privacy', 'Manifest V3'],
-      githubUrl: 'https://github.com/Taki7980/Context-Bridge'
-    },
-    {
-      title: 'AI PRD Generator',
-      tagline: 'Multi-model requirements workbench with native structured outputs',
-      description: 'Converts product ideas and telemetry feedback into comprehensive PRDs with RICE scoring. Unifies Claude, GPT-4o, and Gemini using provider-level structured schema constraints.',
-      tags: ['TypeScript', 'React', 'Multi-Model', 'LLM Schemas'],
-      githubUrl: 'https://github.com/Taki7980/PRD_Generator'
-    },
-    {
-      title: 'Elden Ring Browser Utility',
-      tagline: 'Privacy-audited gaming tool & interactive companion',
-      description: 'Security-reviewed browser extension with strict least-privilege permissions, zero remote analytics, and fast offline game data access.',
-      tags: ['JavaScript', 'Security Audit', 'Privacy'],
-      githubUrl: 'https://github.com/Taki7980/elden-ring-extension'
-    }
-  ];
+  const allTags = ['All', 'Go', 'TypeScript', 'MCP Protocol', 'P2P', 'Security'];
 
-  const experiences: Experience[] = [
-    {
-      role: 'Full Stack & Distributed Systems Engineer',
-      company: 'High-Scale Platforms & Microservices',
-      period: '2023 — Present',
-      highlights: [
-        'Designed high-throughput dispatch and real-time state machines using Go, Redis, and event-driven microservices.',
-        'Engineered telemetry pipelines with New Relic to monitor sub-second latency SLA across distributed API clusters.',
-        'Spearheaded developer tooling and agentic workflows, cutting routine debugging cycles by over 60%.'
-      ]
-    },
-    {
-      role: 'Full Stack Web Developer & Open Source Contributor',
-      company: 'Independent Engineering',
-      period: '2022 — 2023',
-      highlights: [
-        'Built full-stack web applications using Next.js, React, Node.js, TypeScript, PostgreSQL, and Tailwind CSS.',
-        'Authored over 80 public repositories covering P2P networking, developer extensions, and generative AI control planes.',
-        'Solved 200+ algorithm and data structure challenges on LeetCode with emphasis on optimal asymptotic bounds.'
-      ]
-    }
-  ];
-
-  const essays = [
-    {
-      title: 'Escalating Capability, Not Context Volume',
-      date: 'Oct 2026',
-      summary: 'Why naive 1M-token prompt dumps degrade reasoning, and how AST/SCIP structural retrieval preserves LLM precision.',
-      content: 'In building AI Workflow V3, we found that dumping raw project directories into agent prompts introduces significant hallucination. By adopting an AST-first indexing approach and targeted SCIP symbols, agents operate with surgical precision while consuming 80% fewer tokens.'
-    },
-    {
-      title: 'Deterministic Quotations in Probabilistic Worlds',
-      date: 'Sep 2026',
-      summary: 'Architecting B2B RevenueOS: keeping generative models away from authoritative financial logic.',
-      content: 'LLMs are great at parsing messy customer WhatsApp inquiries, but should NEVER calculate discounts or tax line items. In RevenueOS, LLMs extract intent into strict JSON schemas, while a deterministic Go state machine computes prices and checks ledger rules.'
-    },
-    {
-      title: 'Building a P2P Transport Layer from Scratch in Go',
-      date: 'Aug 2026',
-      summary: 'Lessons learned implementing raw TCP handshakes, peer discovery, and content-addressed storage.',
-      content: 'Understanding network protocols requires wrestling with byte streams, framing delimiters, and goroutine leak prevention. Building a custom CAS protocol taught me the fundamental tradeoffs between TCP head-of-line blocking and UDP custom retransmission.'
-    }
-  ];
+  const filteredProjects = PROJECTS.filter(proj => {
+    const matchesTag = selectedTag === 'All' || proj.tags.includes(selectedTag);
+    const matchesQuery = searchQuery === '' || 
+      proj.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      proj.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      proj.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesTag && matchesQuery;
+  });
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#111010] text-neutral-900 dark:text-neutral-100 transition-colors duration-200">
+      
+      {/* Scroll Reading Progress Bar */}
+      <div 
+        className="fixed top-0 left-0 h-0.5 bg-neutral-900 dark:bg-neutral-100 z-50 transition-all duration-75"
+        style={{ width: `${readingProgress}%` }}
+        aria-hidden="true"
+      />
+
       <main className="max-w-2xl mx-auto px-6 py-12 md:py-20 font-sans">
+        
         {/* Navigation / Header */}
         <header className="flex items-center justify-between pb-10 mb-10 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center space-x-4">
             <img 
               src="/avatar.jpg" 
               alt="Nirjhar Sarkar" 
-              className="w-14 h-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700 shadow-sm"
+              className="w-14 h-14 rounded-full object-cover border border-neutral-300 dark:border-neutral-700 shadow-xs"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/mio_profile.jpg';
+              }}
             />
             <div>
               <h1 className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
@@ -192,16 +166,30 @@ export default function App() {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-2.5 rounded-lg text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
+          
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => setIsTerminalOpen(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer"
+              title="Open Command Terminal"
+              aria-label="Open Interactive Terminal"
+            >
+              <Command className="w-3 h-3" />
+              <span>K</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-lg text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer"
+              aria-label="Toggle dark mode"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
         </header>
 
-        {/* Intro */}
+        {/* Intro Section */}
         <section className="mb-14 space-y-4 text-neutral-700 dark:text-neutral-300 leading-relaxed text-[15px]">
           <p>
             I am a software engineer focused on <strong>distributed systems</strong>, <strong>AI agent infrastructure</strong>, and <strong>performant web applications</strong>.
@@ -228,31 +216,109 @@ export default function App() {
           </div>
         </section>
 
-        {/* Selected Work / Experience */}
+        {/* Dynamic Project Showcase with Search & Filters */}
         <section className="mb-14">
-          <h2 className="text-xs uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-6">
-            Experience & Contributions
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500">
+              Selected Projects
+            </h2>
+            
+            {/* Live Search Input */}
+            <div className="relative w-full sm:w-56">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Search projects or tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition"
+                aria-label="Filter projects by title or technology"
+              />
+            </div>
+          </div>
+
+          {/* Tag Filter Pills */}
+          <div className="flex flex-wrap gap-1.5 mb-6">
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setSelectedTag(tag)}
+                className={`text-xs px-2.5 py-1 rounded-md transition cursor-pointer ${
+                  selectedTag === tag
+                    ? 'bg-neutral-900 text-neutral-50 dark:bg-neutral-100 dark:text-neutral-900 font-medium'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Project List */}
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-10 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-lg text-xs text-neutral-500">
+              No projects found matching "{searchQuery}".
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredProjects.map((project) => (
+                <a
+                  key={project.title}
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group block p-4 -mx-4 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900/60 transition duration-150 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center gap-1.5 transition">
+                        <span>{project.title}</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition duration-150" />
+                      </h3>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                        {project.tagline}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed mt-2.5">
+                    {project.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {project.tags.map((tag, tIdx) => (
+                      <span 
+                        key={tIdx} 
+                        className="text-[11px] font-mono px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Experience Section */}
+        <section className="mb-14">
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Experience & Milestones
           </h2>
           <div className="space-y-8">
-            {experiences.map((exp, i) => (
-              <div key={i} className="group">
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {exp.role}
+            {EXPERIENCES.map((exp, idx) => (
+              <div key={idx} className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    {exp.role} <span className="text-neutral-400 font-normal">at {exp.company}</span>
                   </h3>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-500 font-mono">
+                  <span className="text-xs text-neutral-400 font-mono">
                     {exp.period}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
-                  {exp.company}
-                </p>
-                <ul className="space-y-1.5 text-sm text-neutral-600 dark:text-neutral-300">
-                  {exp.highlights.map((h, j) => (
-                    <li key={j} className="flex items-start gap-2">
-                      <span className="text-neutral-400 mt-1.5 text-xs">—</span>
-                      <span>{h}</span>
-                    </li>
+                <ul className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400 list-disc list-inside">
+                  {exp.highlights.map((h, hIdx) => (
+                    <li key={hIdx}>{h}</li>
                   ))}
                 </ul>
               </div>
@@ -260,132 +326,86 @@ export default function App() {
           </div>
         </section>
 
-        {/* Projects */}
+        {/* Engineering Capabilities Grid */}
         <section className="mb-14">
-          <div className="flex justify-between items-baseline mb-6">
-            <h2 className="text-xs uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500">
-              Featured Projects
-            </h2>
-            <a 
-              href="https://github.com/Taki7980?tab=repositories" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 inline-flex items-center gap-1"
-            >
-              View all 80+ repos <ArrowUpRight className="w-3 h-3" />
-            </a>
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Core Technical Arsenal
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
+              <div className="flex items-center space-x-2.5 text-neutral-900 dark:text-neutral-100 mb-2 font-medium text-xs">
+                <Server className="w-4 h-4 text-emerald-500" />
+                <span>Distributed Backends & Go</span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Go (Golang), PostgreSQL, Redis, Kafka, WebSockets, TCP Sockets, Docker, Microservice Architecture.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
+              <div className="flex items-center space-x-2.5 text-neutral-900 dark:text-neutral-100 mb-2 font-medium text-xs">
+                <Terminal className="w-4 h-4 text-blue-500" />
+                <span>AI Infrastructure & Protocols</span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Model Context Protocol (MCP), Tree-sitter / AST indexing, structured schema outputs, deterministic agents.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
+              <div className="flex items-center space-x-2.5 text-neutral-900 dark:text-neutral-100 mb-2 font-medium text-xs">
+                <Layers className="w-4 h-4 text-purple-500" />
+                <span>Frontend Systems</span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                TypeScript, React, Next.js, Tailwind CSS, Chrome Extension MV3, performance profiling.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
+              <div className="flex items-center space-x-2.5 text-neutral-900 dark:text-neutral-100 mb-2 font-medium text-xs">
+                <Code2 className="w-4 h-4 text-amber-500" />
+                <span>Algorithmic Rigor</span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                200+ LeetCode problems solved. Strong intuition for graphs, trees, DP, and space-time tradeoffs.
+              </p>
+            </div>
           </div>
-          
-          <div className="grid gap-5">
-            {projects.map((proj, i) => (
-              <a 
-                key={i} 
-                href={proj.githubUrl} 
-                target="_blank" 
-                rel="noreferrer"
-                className="block p-5 rounded-xl border border-neutral-200 dark:border-neutral-800/80 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-neutral-900/40 transition group"
+        </section>
+
+        {/* Technical Essays Section */}
+        <section className="mb-14">
+          <h2 className="text-xs font-semibold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-6">
+            Architecture Essays & Thoughts
+          </h2>
+          <div className="space-y-4">
+            {ESSAYS.map((essay, idx) => (
+              <div 
+                key={essay.id}
+                className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 hover:border-neutral-300 dark:hover:border-neutral-700 transition"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-neutral-900 dark:text-neutral-100 group-hover:underline">
-                      {proj.title}
-                    </h3>
-                    {proj.featured && (
-                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                        Featured
-                      </span>
-                    )}
-                  </div>
-                  <ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </div>
-                <p className="text-sm font-normal text-neutral-600 dark:text-neutral-400 mb-2">
-                  {proj.tagline}
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-500 leading-relaxed mb-4">
-                  {proj.description}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {proj.tags.map((tag, t) => (
-                    <span 
-                      key={t} 
-                      className="text-[11px] font-mono px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {/* Skills / Craft */}
-        <section className="mb-14">
-          <h2 className="text-xs uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-6">
-            Craft & Capabilities
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
-              <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2 flex items-center gap-2 text-sm">
-                <Server className="w-4 h-4 text-neutral-500" /> Backend & Distributed
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed">
-                Go, Microservices, Redis, Kafka, PostgreSQL, TCP Networking, Docker, gRPC, Distributed State Machines
-              </p>
-            </div>
-            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
-              <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2 flex items-center gap-2 text-sm">
-                <Layers className="w-4 h-4 text-neutral-500" /> Frontend & Architecture
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed">
-                TypeScript, React, Next.js (App Router), Tailwind CSS, Vite, Radix UI, State Management, Responsive Design
-              </p>
-            </div>
-            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
-              <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2 flex items-center gap-2 text-sm">
-                <Terminal className="w-4 h-4 text-neutral-500" /> AI Systems & Tooling
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed">
-                Model Context Protocol (MCP), Agent Control Planes, SCIP/AST Symbol Retrieval, Structured Outputs, Multi-model orchestrators
-              </p>
-            </div>
-            <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/30">
-              <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2 flex items-center gap-2 text-sm">
-                <Code2 className="w-4 h-4 text-neutral-500" /> Observability & Quality
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed">
-                New Relic, Distributed Tracing, LeetCode (200+ Solved), Unit & Integration Testing, Security Audits
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Engineering Essays / Notes */}
-        <section className="mb-14">
-          <h2 className="text-xs uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-6">
-            Notes & Architecture
-          </h2>
-          <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {essays.map((essay, idx) => (
-              <div key={idx} className="py-4">
                 <button
+                  type="button"
                   onClick={() => setSelectedEssay(selectedEssay === idx ? null : idx)}
-                  className="w-full text-left flex justify-between items-center group cursor-pointer"
+                  className="w-full text-left flex justify-between items-start cursor-pointer group"
                 >
                   <div>
-                    <h3 className="font-medium text-neutral-900 dark:text-neutral-100 group-hover:underline">
+                    <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
                       {essay.title}
                     </h3>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       {essay.summary}
                     </p>
                   </div>
-                  <span className="text-xs text-neutral-400 font-mono ml-4 shrink-0">
-                    {essay.date}
-                  </span>
+                  <div className="text-right ml-4 shrink-0">
+                    <span className="text-xs text-neutral-400 block font-mono">
+                      {essay.date}
+                    </span>
+                    <span className="text-[10px] text-neutral-500 block font-mono">
+                      {essay.readTime}
+                    </span>
+                  </div>
                 </button>
                 {selectedEssay === idx && (
-                  <div className="mt-3 p-4 rounded-lg bg-neutral-100 dark:bg-neutral-900 text-xs leading-relaxed text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 animate-fadeIn">
+                  <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
                     {essay.content}
                   </div>
                 )}
@@ -394,66 +414,74 @@ export default function App() {
           </div>
         </section>
 
-        {/* Connect & Socials */}
-        <section className="pt-8 border-t border-neutral-200 dark:border-neutral-800">
-          <h2 className="text-xs uppercase tracking-wider font-semibold text-neutral-400 dark:text-neutral-500 mb-6">
-            Connect
-          </h2>
-          <div className="flex flex-wrap gap-4 text-sm mb-8">
+        {/* Footer & Socials */}
+        <footer className="pt-8 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 dark:text-neutral-500">
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={copyEmail}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-neutral-700 dark:text-neutral-300 cursor-pointer"
+              aria-label="Copy email address"
+            >
+              {copyStatus === 'success' && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+              {copyStatus === 'error' && <AlertCircle className="w-3.5 h-3.5 text-rose-500" />}
+              {copyStatus === 'idle' && <Copy className="w-3.5 h-3.5" />}
+              <span>
+                {copyStatus === 'success' ? 'Copied to clipboard' : copyStatus === 'error' ? 'Copy Failed' : 'nirjharsarkar8@gmail.com'}
+              </span>
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-4">
             <a 
               href="https://github.com/Taki7980" 
               target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              rel="noreferrer"
+              className="hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              title="GitHub"
             >
-              <GithubIcon className="w-4 h-4" /> GitHub
+              <GithubIcon />
             </a>
             <a 
               href="https://www.linkedin.com/in/nirjhar-sarkar/" 
               target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              rel="noreferrer"
+              className="hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              title="LinkedIn"
             >
-              <LinkedinIcon className="w-4 h-4" /> LinkedIn
+              <LinkedinIcon />
             </a>
             <a 
               href="https://x.com/nirjharsarkar_7" 
               target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              rel="noreferrer"
+              className="hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              title="Twitter"
             >
-              <TwitterIcon className="w-4 h-4" /> X (Twitter)
+              <TwitterIcon />
             </a>
             <a 
               href="https://leetcode.com/" 
               target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              rel="noreferrer"
+              className="hover:text-neutral-900 dark:hover:text-neutral-100 transition"
+              title="LeetCode"
             >
-              <Code2 className="w-4 h-4" /> LeetCode
-            </a>
-            <a 
-              href="https://stackoverflow.com/users/21166071" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="inline-flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition"
-            >
-              <BookOpen className="w-4 h-4" /> Stack Overflow
+              <Code2 className="w-4 h-4" />
             </a>
           </div>
+        </footer>
 
-          <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-500">
-            <button
-              onClick={copyEmail}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition text-neutral-700 dark:text-neutral-300 cursor-pointer"
-            >
-              {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedEmail ? 'Copied to clipboard' : 'nirjharsarkar8@gmail.com'}</span>
-            </button>
-            <span>© {new Date().getFullYear()} Nirjhar Sarkar</span>
-          </div>
-        </section>
       </main>
+
+      {/* Interactive Command Terminal Modal */}
+      <TerminalModal 
+        isOpen={isTerminalOpen} 
+        onClose={() => setIsTerminalOpen(false)} 
+        onThemeToggle={() => setDarkMode(!darkMode)}
+        darkMode={darkMode}
+      />
+
     </div>
   );
 }
