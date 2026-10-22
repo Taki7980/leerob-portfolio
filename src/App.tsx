@@ -262,40 +262,56 @@ export default function App() {
             </div>
           ) : (
             <div className="space-y-6">
-              {filteredProjects.map((project) => (
-                <a
-                  key={project.title}
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group block p-4 -mx-4 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-900/60 transition duration-150 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center gap-1.5 transition">
-                        <span>{project.title}</span>
-                        <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition duration-150" />
-                      </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        {project.tagline}
-                      </p>
+              {filteredProjects.map((project) => {
+                const CardTag = project.isPrivate ? 'div' : 'a';
+                const cardProps = project.isPrivate
+                  ? { role: 'article', 'aria-label': `${project.title} (Private Repository)` }
+                  : { href: project.githubUrl, target: '_blank', rel: 'noreferrer' };
+
+                return (
+                  <CardTag
+                    key={project.title}
+                    {...cardProps}
+                    className={`group block p-4 -mx-4 rounded-xl transition duration-150 border border-transparent ${
+                      project.isPrivate
+                        ? 'cursor-default'
+                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-900/60 hover:border-neutral-200 dark:hover:border-neutral-800 cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center gap-1.5 transition">
+                          <span>{project.title}</span>
+                          {project.isPrivate && (
+                            <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700">
+                              Private
+                            </span>
+                          )}
+                          {!project.isPrivate && (
+                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 translate-y-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition duration-150" />
+                          )}
+                        </h3>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                          {project.tagline}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed mt-2.5">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {project.tags.map((tag, tIdx) => (
-                      <span 
-                        key={tIdx} 
-                        className="text-[11px] font-mono px-2 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </a>
-              ))}
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed mt-2.5">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </CardTag>
+                );
+              })}
             </div>
           )}
         </section>

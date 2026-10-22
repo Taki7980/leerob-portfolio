@@ -100,7 +100,7 @@ export function TerminalModal({ isOpen, onClose, onThemeToggle, darkMode }: Term
               `[PROJECT: ${proj.title}]`,
               `Tagline: ${proj.tagline}`,
               `Stack: ${proj.tags.join(', ')}`,
-              `URL: ${proj.githubUrl}`,
+              `URL: ${proj.githubUrl || '[Private Repository - Internal Architecture]'}`,
               `Details: ${proj.description}`
             ];
           } else if (essay) {
