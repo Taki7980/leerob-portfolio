@@ -11,73 +11,93 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
+    title: 'RevenueOS Backend',
+    tagline: 'Multi-Tenant B2B Revenue Quotation Engine & Idempotent Ledger in Go',
+    description: 'Production-grade B2B quotation agent in Go with PostgreSQL. Features WorkOS JWT/JWKS auth, row-level security, transactional outbox with SKIP LOCKED, integer minor-unit money math, micro-benchmarks (~1.5M ops/sec), and Stripe webhook processing.',
+    tags: ['Go', 'PostgreSQL', 'Docker', 'Idempotency', 'Stripe', 'WorkOS'],
+    githubUrl: 'https://github.com/Taki7980/RevenueOS-backend',
+    featured: true,
+    isPrivate: false
+  },
+  {
     title: 'AI Workflow V3',
-    tagline: 'Deterministic AI Agent Control Plane & SCIP Indexer in Go',
-    description: 'Go-first orchestration platform. Escalates model capability instead of bloating prompt tokens. Uses SCIP AST code intelligence to eliminate file dumping with native MCP servers and deterministic loops.',
-    tags: ['Go', 'MCP Protocol', 'SCIP/AST', 'Multi-Agent', 'CLI'],
+    tagline: 'Deterministic AI Agent Control Plane & Multi-Repo Indexer in Go',
+    description: 'Go-first orchestration platform with multi-repo code-review-graph indexing. Escalates model capability instead of bloating prompt tokens. Uses structural symbol intelligence to eliminate file dumping with native MCP servers and deterministic loops.',
+    tags: ['Go', 'MCP Protocol', 'AST Indexing', 'Multi-Agent', 'CLI'],
     githubUrl: 'https://github.com/Taki7980/Ai-workflow-V3',
     featured: true,
     isPrivate: false
   },
   {
-    title: 'RevenueOS Backend',
-    tagline: 'Multi-Tenant B2B Revenue Quotation Engine & Idempotent Ledger in Go',
-    description: 'Production-grade B2B quotation agent in Go with PostgreSQL. Features WorkOS JWT/JWKS auth, row-level security, transactional outbox with SKIP LOCKED, integer minor-unit money math, and WhatsApp webhook processing.',
-    tags: ['Go', 'PostgreSQL', 'Docker', 'Idempotency', 'WorkOS'],
-    featured: true,
-    isPrivate: true
-  },
-  {
-    title: 'AI Workflow Control Plane V2',
-    tagline: 'Budget-Constrained Context Assembly & Adaptive Routing Engine',
-    description: 'Autonomous control plane coordinating structural AST intelligence, BM25/RRF fusion ranking, and submodular context assembly with crash-consistent atomic state transitions.',
-    tags: ['Python', 'AST Indexing', 'Context Optimization', 'Telemetry', 'Distributed'],
-    githubUrl: 'https://github.com/Taki7980/ai-workflow-control-plane-v2',
+    title: 'Context Bridge',
+    tagline: 'Zero-Leak Ephemeral Memory Bridge & Context Optimizer for AI',
+    description: 'Sanitizes developer context before it hits third-party LLMs. Achieves 63.9% median token reduction while maintaining 100% core entity retention. Filters credentials and exports structured context via Chrome MV3 and native messaging.',
+    tags: ['TypeScript', 'Chrome MV3', 'Security', 'Privacy', 'Compression'],
+    githubUrl: 'https://github.com/Taki7980/Context-Bridge',
     featured: true,
     isPrivate: false
   },
   {
     title: 'Distributed File Storage',
-    tagline: 'Decentralized Content-Addressed Storage System',
-    description: 'Peer-to-peer storage cluster built from scratch in Go. Implements TCP framing, peer handshakes, CAS SHA-256 routing, and streaming encryption without heavy frameworks.',
-    tags: ['Go', 'P2P', 'TCP Sockets', 'CAS', 'Crypto'],
+    tagline: 'Decentralized Content-Addressed Storage System in Go',
+    description: 'Peer-to-peer storage cluster built from scratch in Go. Implements custom TCP framing, peer handshakes, CAS SHA-256 routing, streaming AES-256-GCM encryption at rest, and full ReadStream/Delete primitives without third-party frameworks.',
+    tags: ['Go', 'P2P', 'TCP Sockets', 'CAS', 'Crypto', 'AES-256'],
     githubUrl: 'https://github.com/Taki7980/distributed-file-storage',
     featured: true,
     isPrivate: false
   },
   {
     title: 'AI PRD Generator',
-    tagline: 'Multi-Model Engineering Requirements Workbench with pgvector',
-    description: 'Converts product ideas into structured PRDs with RICE scoring. Implements multi-model ensemble orchestration across Claude, GPT-4o, and Gemini with Zod schema validation, pgvector RAG, and cross-family LLM evaluation.',
-    tags: ['TypeScript', 'Next.js', 'PostgreSQL', 'pgvector', 'Zod'],
-    featured: true,
-    isPrivate: true
-  },
-  {
-    title: 'Context Bridge',
-    tagline: 'Local-First Chrome Extension for Secure AI Prompts',
-    description: 'Sanitizes developer context before it hits third-party LLMs. Scans for leaked keys, tokens, and PII, then exports structured snippets via clipboard or native MCP bridges.',
-    tags: ['TypeScript', 'Chrome MV3', 'Security', 'Privacy'],
-    githubUrl: 'https://github.com/Taki7980/Context-Bridge',
+    tagline: 'Multi-Model Engineering Requirements Workbench with RICE Scoring',
+    description: 'Converts unstructured product concepts into production PRDs with edge cases and RICE scoring. Features multi-model ensemble orchestration across Claude, GPT-4o, and Gemini with Zod schema validation and token-optimized Caveman mode.',
+    tags: ['TypeScript', 'Next.js', 'PostgreSQL', 'Zod', 'RICE Scoring'],
+    githubUrl: 'https://github.com/Taki7980/PRD_Generator',
     featured: true,
     isPrivate: false
   },
   {
-    title: 'AllmightyAPI',
-    tagline: 'Unified REST & Developer Utility Services Hub',
-    description: 'Modular API backend and developer utility hub providing low-latency helper endpoints, format converters, and lightweight utilities for developer workflows.',
-    tags: ['JavaScript', 'Node.js', 'REST API', 'Backend'],
-    githubUrl: 'https://github.com/Taki7980/AllmightyAPI',
-    featured: false,
+    title: 'AI Workflow Control Plane V2',
+    tagline: 'Budget-Constrained Context Assembly & Adaptive Routing Engine',
+    description: 'Autonomous control plane coordinating structural AST intelligence, BM25/RRF fusion ranking, and submodular context assembly with crash-consistent atomic state transitions and budget-aware model failover.',
+    tags: ['Python', 'AST Indexing', 'Context Optimization', 'Telemetry', 'Distributed'],
+    githubUrl: 'https://github.com/Taki7980/ai-workflow-control-plane-v2',
+    featured: true,
     isPrivate: false
   },
   {
-    title: 'Elden Ring Utility',
-    tagline: 'Zero-Telemetry Browser Gaming Companion Tool',
-    description: 'Offline-capable gaming extension engineered for minimal permissions and zero telemetry tracking. Fast, lightweight reference built for desktop browsers.',
-    tags: ['JavaScript', 'Extension', 'Tools'],
-    githubUrl: 'https://github.com/Taki7980/elden-ring-extension',
-    featured: false,
+    title: 'Dripper Backend',
+    tagline: 'High-Throughput Subscription Billing & Garment Queue Pipeline',
+    description: 'Hono and TypeScript event-driven backend for automated garment distribution. Features BullMQ queue workers, PostgreSQL with Drizzle ORM, HMAC webhook validation, and Docker Compose orchestration.',
+    tags: ['TypeScript', 'Hono', 'BullMQ', 'PostgreSQL', 'Redis', 'Docker'],
+    githubUrl: 'https://github.com/Taki7980/Dripper-backend',
+    featured: true,
+    isPrivate: false
+  },
+  {
+    title: 'askDocRAG',
+    tagline: 'Edge AI Document Intelligence Engine with SQLite Vector Search',
+    description: 'High-performance local document intelligence and RAG engine built on Next.js and sqlite-vec. Features in-process vector cosine similarity searches, zero-telemetry local Ollama embedding pipelines, and automated retrieval evaluation.',
+    tags: ['TypeScript', 'Next.js', 'SQLite', 'sqlite-vec', 'RAG', 'Ollama'],
+    githubUrl: 'https://github.com/Taki7980/askDocRAG',
+    featured: true,
+    isPrivate: false
+  },
+  {
+    title: 'RevenueOS Admin Panel',
+    tagline: 'Enterprise Billing & Operations Console with Radix UI',
+    description: 'Production React 18 and Vite dashboard for subscription billing observability. Features TanStack Query cache management, accessible Radix UI design systems, interactive enterprise quote configurator, and 70 Vitest unit tests.',
+    tags: ['React 18', 'TypeScript', 'Vite', 'Radix UI', 'Vitest', 'Tailwind'],
+    githubUrl: 'https://github.com/Taki7980/revenueOS-admin-panel',
+    featured: true,
+    isPrivate: false
+  },
+  {
+    title: 'healthOS',
+    tagline: 'WhatsApp-Native Medicine Fulfillment & Real-Time Geospatial Search',
+    description: 'Fastify and TypeScript medicine engine connecting patients to local pharmacies via WhatsApp Cloud API webhooks. Implements state machine conversation loops, PostGIS geospatial radius searching, and quote reservation flows.',
+    tags: ['TypeScript', 'Fastify', 'WhatsApp API', 'Geospatial', 'State Machine'],
+    githubUrl: 'https://github.com/Taki7980/healthOS',
+    featured: true,
     isPrivate: false
   }
 ];
